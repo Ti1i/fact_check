@@ -19,7 +19,7 @@ response.status_code = 200
 
 def gpt_unitfact_extraction(text: str) -> List[str]:
     def _call_gpt(text: str) -> str:
-        client = OpenAI(api_key="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")
+        client = OpenAI(api_key=your_api_key)
         responses = client.chat.completions.create(
             model = "gpt-4o-mini",
             messages = [
