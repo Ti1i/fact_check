@@ -23,7 +23,7 @@ def gpt_unitfact_extraction(text: str) -> List[str]:
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": f"""
             給定一段包含單位事實（Unit Fact，簡稱UF）的文本。UF是一種聲明，宣稱某事為真或假，並可由人類驗證。你的任務是準確識別並提取文本中每一個UF。為確保每個UF清晰無歧義，應避免使用代詞或其他指代表達，且每個UF應簡潔（少於20個字）並獨立存在。
-            【回應格式】: 回應必須是字典列表形式，每個字典包含鍵「UF」和值「提取的單位事實」。你只能按照以下格式回應，不要添加任何其他內容或違反格式的註釋。
+            【回應格式】: 回應必須是字典列表形式，每個字典包含鍵「UF」和值「提取的單位事實」。你只能按照以下JSON格式回應，不要添加任何其他內容或違反格式的註釋。
             【任務範例】:
             ［文本］：李娜在澳網決賽中直落兩盤擊敗了謝淑薇。這是她第二次贏得澳洲網球公開賽冠軍。李娜成為亞洲第一位贏得這項大滿貫的球員。
             ［回應］：
@@ -95,43 +95,6 @@ def retriever_api(questions: List[str]) -> str:
             print(f"Caught exception: {e}")
     
     return formatted_docs
-
-
-# async def retriever_api(questions: List[str]) -> str:
-#     async def fetch(session, question):
-#         url = f"https://nvcenter.ntu.edu.tw:8000/retrieve?question={question}"
-#         try:
-#             async with session.get(url) as response:
-#                 raw_docs = await response.json()
-#                 return [
-#                     {
-#                         "page_content": doc["page_content"].replace('"', '\\"').replace("'", "\\'"),
-#                         "metadata": {
-#                             "source": doc["metadata"]["source"],
-#                             "chunk": doc["metadata"]["chunk"],
-#                             "start_idx": doc["metadata"]["start_idx"],
-#                         },
-#                     }
-#                     for doc in raw_docs
-#                 ]
-#         except Exception as e:
-#             print(f"Error fetching {question}: {e}")
-#             return []
-
-#     async with aiohttp.ClientSession() as session:
-#         tasks = [fetch(session, question) for question in questions]
-#         results = await asyncio.gather(*tasks)
-
-#     def process(docs):
-#         results = ""
-#         for doc in docs:
-#             evidence = doc['page_content']
-#             source = doc['metadata']['source']
-#             results += f"參考資料:{source}\n{evidence}\n"
-#         return results
-
-#     documents = [process(raw_docs) for raw_docs in results]
-#     return "\n".join(documents)
 
 
 
