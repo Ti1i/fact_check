@@ -97,41 +97,41 @@ def retriever_api(questions: List[str]) -> str:
     return formatted_docs
 
 
-async def retriever_api(questions: List[str]) -> str:
-    async def fetch(session, question):
-        url = f"https://nvcenter.ntu.edu.tw:8000/retrieve?question={question}"
-        try:
-            async with session.get(url) as response:
-                raw_docs = await response.json()
-                return [
-                    {
-                        "page_content": doc["page_content"].replace('"', '\\"').replace("'", "\\'"),
-                        "metadata": {
-                            "source": doc["metadata"]["source"],
-                            "chunk": doc["metadata"]["chunk"],
-                            "start_idx": doc["metadata"]["start_idx"],
-                        },
-                    }
-                    for doc in raw_docs
-                ]
-        except Exception as e:
-            print(f"Error fetching {question}: {e}")
-            return []
+# async def retriever_api(questions: List[str]) -> str:
+#     async def fetch(session, question):
+#         url = f"https://nvcenter.ntu.edu.tw:8000/retrieve?question={question}"
+#         try:
+#             async with session.get(url) as response:
+#                 raw_docs = await response.json()
+#                 return [
+#                     {
+#                         "page_content": doc["page_content"].replace('"', '\\"').replace("'", "\\'"),
+#                         "metadata": {
+#                             "source": doc["metadata"]["source"],
+#                             "chunk": doc["metadata"]["chunk"],
+#                             "start_idx": doc["metadata"]["start_idx"],
+#                         },
+#                     }
+#                     for doc in raw_docs
+#                 ]
+#         except Exception as e:
+#             print(f"Error fetching {question}: {e}")
+#             return []
 
-    async with aiohttp.ClientSession() as session:
-        tasks = [fetch(session, question) for question in questions]
-        results = await asyncio.gather(*tasks)
+#     async with aiohttp.ClientSession() as session:
+#         tasks = [fetch(session, question) for question in questions]
+#         results = await asyncio.gather(*tasks)
 
-    def process(docs):
-        results = ""
-        for doc in docs:
-            evidence = doc['page_content']
-            source = doc['metadata']['source']
-            results += f"參考資料:{source}\n{evidence}\n"
-        return results
+#     def process(docs):
+#         results = ""
+#         for doc in docs:
+#             evidence = doc['page_content']
+#             source = doc['metadata']['source']
+#             results += f"參考資料:{source}\n{evidence}\n"
+#         return results
 
-    documents = [process(raw_docs) for raw_docs in results]
-    return "\n".join(documents)
+#     documents = [process(raw_docs) for raw_docs in results]
+#     return "\n".join(documents)
 
 
 
