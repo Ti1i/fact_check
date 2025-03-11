@@ -245,5 +245,4 @@ verified_text = asyncio.run(gpt_txt_verification(uf_list, documents))
     
 #-----------------------pipeline
 
-response.body = verified_text
 print(verified_text) 
