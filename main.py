@@ -37,7 +37,7 @@ def gpt_unitfact_extraction(request: TextRequest):
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": f"""
             給定一段包含單位事實（Unit Fact，簡稱UF）的文本。UF是一種聲明，宣稱某事為真或假，並可由人類驗證。你的任務是準確識別並提取文本中每一個UF。為確保每個UF清晰無歧義，應避免使用代詞或其他指代表達，且每個UF應簡潔（少於20個字）並獨立存在。
-            【回應格式】: 回應必須是字典列表形式，每個字典包含鍵「UF」和值「提取的單位事實」。你只能按照以下JSON格式回應，不要添加任何其他內容或違反格式的註釋。
+            【回應格式】: 回應必須是字典列表形式，每個字典包含鍵「UF」和值「提取的單位事實」。你只能按照以下格式回應，不要添加任何其他內容或違反格式的註釋。
             【任務範例】:
             ［文本］：李娜在澳網決賽中直落兩盤擊敗了謝淑薇。這是她第二次贏得澳洲網球公開賽冠軍。李娜成為亞洲第一位贏得這項大滿貫的球員。
             ［回應］：
@@ -62,7 +62,7 @@ def gpt_unitfact_extraction(request: TextRequest):
         for line in lines:
             try:
                 data = json.loads(line)
-                group_list.append(data.get("UF", ""))
+                group_list.append(data["UF"])
             except json.JSONDecodeError:
                 pass
         return group_list
@@ -76,23 +76,21 @@ def retriever_api(request: QueryRequest):
     documents = []
     
     def process(docs):
-        results = []
+        results = ""
         for doc in docs:
-            formatted_doc = {
-                "page_content": doc["page_content"],
-                "metadata": doc["metadata"]
-            }
-            results.append(formatted_doc)
+            evidence = doc['page_content']
+            source = doc['metadata']['source']
+            results += f"參考資料:{source}\n{evidence}\n"
         return results
     
     for query in queries:
         try:
             res = requests.get(f"https://nvcenter.ntu.edu.tw:8000/retrieve?question={query}")
             raw_docs = res.json()
-            documents.extend(process(raw_docs))
+            documents.append(process(raw_docs))
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"檢索錯誤: {e}")
-    
+            
     return {"documents": documents}
 
 
@@ -111,19 +109,19 @@ async def gpt_txt_verification(request: VerificationRequest):
                 當你判斷給定文本的真實性時，可以參考提供的證據，但證據不一定有幫助，且證據之間可能會相互矛盾，所以在使用證據來判斷文本的真實性時，務必小心謹慎。
                 回應要是一個包含五個鍵的字典——"statement"（敘述）, "reasoning"（推理）, "error"（錯誤）, "factuality"（真實性）, "source"(來源)。
                 statement不要重複，且需完全來自於文本中的文字。同時引用文本的句子時一律使用「」。
-                請僅以以下JSON格式進行回應。不要返回任何其他內容或是增加其他註釋。
+                請僅以以下格式進行回應。不要返回任何其他內容。
                 [回應格式]:
                 {{
                 "statement": "statement",
                 "reasoning": "判斷文本真實性的理由，請提供證據來支持你的判斷。",
                 "error": "如果文本是正確的為 None；否則，描述文本錯誤的部分。",
                 "factuality": 如果給定的文本是真實的，則為 True，否則為 False,
-                "source": "資料來源",
+                "source": "資料來源，可能為檔案或網址。如果找不到來源則顯示「無」",
                 }}
                 
                 [範例]:
                 [文本]: 京都是日本的首都，以其傳統的木造建築和千年寺廟著稱。東京塔是世界上第二高的自立式鋼塔。
-                [證據]: [{{"content": "京都是日本的歷史文化中心，曾經是日本的首都，直到1868年為止。", "source": "https://zh.wikipedia.org/zh-tw/%E4%BA%AC%E9%83%BD"}}],
+                [證據]: [[{{"content": "京都是日本的歷史文化中心，曾經是日本的首都，直到1868年為止。", "source": "https://zh.wikipedia.org/zh-tw/%E4%BA%AC%E9%83%BD"}}],
                 [回應]：
                 {{
                 "statement": "京都是日本的首都",
@@ -165,11 +163,10 @@ async def full_pipeline(request: PipelineRequest):
     documents = doc_response["documents"]
     
     # Verify facts
-    verification_response = await gpt_txt_verification(VerificationRequest(texts=unit_facts, docs=[d["page_content"] for d in documents]))
+    verification_response = await gpt_txt_verification(VerificationRequest(texts=unit_facts, docs=documents))
     
     return {
         "unit_facts": unit_facts,
         "documents": documents,
         "verification_results": verification_response["verification_results"]
     }
-
