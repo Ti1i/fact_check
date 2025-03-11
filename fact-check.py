@@ -4,11 +4,15 @@ import requests
 import asyncio
 import re
 import aiohttp
+import os
 
 from typing import List
 from openai import OpenAI
 from openai import AsyncOpenAI
 ### Packages ###
+
+your_api_key = os.getenv("openai_api_key")
+
 
 def gpt_unitfact_extraction(text: str) -> List[str]:
     def _call_gpt(text: str) -> str:
