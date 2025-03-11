@@ -1,6 +1,3 @@
-
-from napkin import response
-
 ### Packages ###
 import json
 import requests
@@ -12,10 +9,6 @@ from typing import List
 from openai import OpenAI
 from openai import AsyncOpenAI
 ### Packages ###
-
-
-response.status_code = 200
-# response.body = "hello, world!"
 
 def gpt_unitfact_extraction(text: str) -> List[str]:
     def _call_gpt(text: str) -> str:
