@@ -116,7 +116,7 @@ async def gpt_txt_verification(request: VerificationRequest):
                 "reasoning": "判斷文本真實性的理由，請提供證據來支持你的判斷。",
                 "error": "如果文本是正確的為 None；否則，描述文本錯誤的部分。",
                 "factuality": 如果給定的文本是真實的，則為 True，否則為 False,
-                "source": "資料來源，可能為檔案或網址。如果找不到來源則顯示「無」",
+                "source": "資料來源，為用來判斷statement事實性的檔案或網址。如果找不到來源則顯示「無」",
                 }}
                 
                 [範例]:
