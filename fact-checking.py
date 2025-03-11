@@ -100,41 +100,41 @@ def retriever_api(questions: List[str]) -> str:
     return formatted_docs
 
 
-# async def retriever_api(questions: List[str]) -> str:
-#     async def fetch(session, question):
-#         url = f"https://nvcenter.ntu.edu.tw:8000/retrieve?question={question}"
-#         try:
-#             async with session.get(url) as response:
-#                 raw_docs = await response.json()
-#                 return [
-#                     {
-#                         "page_content": doc["page_content"].replace('"', '\\"').replace("'", "\\'"),
-#                         "metadata": {
-#                             "source": doc["metadata"]["source"],
-#                             "chunk": doc["metadata"]["chunk"],
-#                             "start_idx": doc["metadata"]["start_idx"],
-#                         },
-#                     }
-#                     for doc in raw_docs
-#                 ]
-#         except Exception as e:
-#             print(f"Error fetching {question}: {e}")
-#             return []
+async def retriever_api(questions: List[str]) -> str:
+    async def fetch(session, question):
+        url = f"https://nvcenter.ntu.edu.tw:8000/retrieve?question={question}"
+        try:
+            async with session.get(url) as response:
+                raw_docs = await response.json()
+                return [
+                    {
+                        "page_content": doc["page_content"].replace('"', '\\"').replace("'", "\\'"),
+                        "metadata": {
+                            "source": doc["metadata"]["source"],
+                            "chunk": doc["metadata"]["chunk"],
+                            "start_idx": doc["metadata"]["start_idx"],
+                        },
+                    }
+                    for doc in raw_docs
+                ]
+        except Exception as e:
+            print(f"Error fetching {question}: {e}")
+            return []
 
-#     async with aiohttp.ClientSession() as session:
-#         tasks = [fetch(session, question) for question in questions]
-#         results = await asyncio.gather(*tasks)
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch(session, question) for question in questions]
+        results = await asyncio.gather(*tasks)
 
-#     def process(docs):
-#         results = ""
-#         for doc in docs:
-#             evidence = doc['page_content']
-#             source = doc['metadata']['source']
-#             results += f"參考資料:{source}\n{evidence}\n"
-#         return results
+    def process(docs):
+        results = ""
+        for doc in docs:
+            evidence = doc['page_content']
+            source = doc['metadata']['source']
+            results += f"參考資料:{source}\n{evidence}\n"
+        return results
 
-#     documents = [process(raw_docs) for raw_docs in results]
-#     return "\n".join(documents)
+    documents = [process(raw_docs) for raw_docs in results]
+    return "\n".join(documents)
 
 
 
@@ -149,7 +149,7 @@ def process(docs):
 
 async def gpt_txt_verification(texts: List[str], docs: List[str]) -> List[str]:
     async def _call_gpt(text: str, evd: str) -> str:
-        client = AsyncOpenAI(api_key="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")
+        client = AsyncOpenAI(api_key=your_api_key)
         responses = await client.chat.completions.create(
             model = "gpt-4o-mini",
             messages = [
